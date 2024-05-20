@@ -6,6 +6,7 @@ logs/
 experiments/
 lightning_logs/
 wandb/
+cifar10_models/state_dicts
 
 # explore notebooks
 explore.ipynb
