@@ -62,6 +62,7 @@ bs = int(n/10)
 dataloader_gd = torch.utils.data.DataLoader(dataset, batch_size=n, shuffle=False)
 dataloader_sgd = torch.utils.data.DataLoader(dataset, batch_size=bs, shuffle=False)
 dataloader_gdwd = torch.utils.data.DataLoader(dataset, batch_size=n, shuffle=False)
+dataloader_adam = torch.utils.data.DataLoader(dataset, batch_size=bs, shuffle=False)
 
 # --- TORCH MODEL ----
 
@@ -77,6 +78,7 @@ class LinearModel(torch.nn.Module):
 mod_gd = LinearModel()
 mod_sgd = LinearModel()
 mod_gdwd = LinearModel()
+mod_adam = LinearModel()
 
 # --- OPTIMIZER ---
 
@@ -86,6 +88,7 @@ wd = 1.0
 opt_gd = torch.optim.SGD(mod_gd.parameters(), lr=lr)
 opt_sgd = torch.optim.SGD(mod_sgd.parameters(), lr=lr)
 opt_gdwd = torch.optim.SGD(mod_gdwd.parameters(), lr=lr, weight_decay=wd)
+opt_adam = torch.optim.Adam(mod_adam.parameters(), lr=lr*10)
 crit = torch.nn.MSELoss()
 
 # --- TRAJECTORIES ---
@@ -110,19 +113,23 @@ def trajectory(model, dataloader, opt, crit, n_iters):
 traj_gd = trajectory(mod_gd, dataloader_gd, opt_gd, crit, n_iters)
 traj_sgd = trajectory(mod_sgd, dataloader_sgd, opt_sgd, crit, n_iters)
 traj_gdwd = trajectory(mod_gdwd, dataloader_gdwd, opt_gdwd, crit, n_iters)
+traj_adam = trajectory(mod_adam, dataloader_adam, opt_adam, crit, n_iters)
 
 # unzip x,y trajectories!
 x_traj_gd, y_traj_gd = zip(*traj_gd)
 x_traj_sgd, y_traj_sgd = zip(*traj_sgd)
 x_traj_gdwd, y_traj_gdwd = zip(*traj_gdwd)
+x_traj_adam, y_traj_adam = zip(*traj_adam)
 
 x_traj_gd, y_traj_gd = np.array(x_traj_gd), np.array(y_traj_gd)
 x_traj_sgd, y_traj_sgd = np.array(x_traj_sgd), np.array(y_traj_sgd)
 x_traj_gdwd, y_traj_gdwd = np.array(x_traj_gdwd), np.array(y_traj_gdwd)
+x_traj_adam, y_traj_adam = np.array(x_traj_adam), np.array(y_traj_adam)
 
 z_traj_gd = landscape(x_traj_gd, y_traj_gd)
 z_traj_sgd = landscape(x_traj_sgd, y_traj_sgd)
 z_traj_gdwd = landscape(x_traj_gdwd, y_traj_gdwd)
+z_traj_adam = landscape(x_traj_adam, y_traj_adam)
 
 # --- PLOT ---
 
@@ -140,6 +147,7 @@ ax.plot(x_init, y_init, z_init, marker='o', markersize=3, color='white', zorder=
 ax.plot(x_traj_gd, y_traj_gd, z_traj_gd, linestyle='-', marker='o', markersize=1, linewidth=0.8, color='red', zorder=10, label='gd')
 ax.plot(x_traj_gdwd, y_traj_gdwd, z_traj_gdwd, linestyle='-', marker='o', markersize=0.5, linewidth=0.8, color='gold', zorder=10, label='gdwd')
 ax.plot(x_traj_sgd, y_traj_sgd, z_traj_sgd, linestyle='-', linewidth=0.8, color='forestgreen', zorder=10, label='sgd')
+ax.plot(x_traj_adam, y_traj_adam, z_traj_adam, linestyle='-', linewidth=0.8, color='blue', zorder=10, label='adam')
 
 # Labels and title
 ax.set_xlabel('a')
